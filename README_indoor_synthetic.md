@@ -29,7 +29,7 @@ This repo contains the code to:
 
 ## Load preprocessed scenes
 
-We include one scene for demo: `kitchen_mi` from [Benedikt Bitterli](https://benedikt-bitterli.me/resources/)->'Country Kitchen'. They are preprocessed and ready to use. Download [here](https://drive.google.com/drive/folders/1FP2oO2nScm57RTH9hwUzObnJOynD3UDO?usp=share_link) (faster to download .zip files and unzip), and organize as below:
+We include one scene for demo: `kitchen_mi` from [Benedikt Bitterli](https://benedikt-bitterli.me/resources/)->'Country Kitchen'. They are preprocessed and ready to use. Download [here](https://mclab.ucsd.edu/FIPT_data_release/) (faster to download .zip files and unzip), and organize as below:
 
 <!-- https://tree.nathanfriend.io -->
 
