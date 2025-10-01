@@ -1,6 +1,6 @@
 # FIPT-data: data preparation for FIPT
 
-### [Project Page](https://jerrypiglet.github.io/fipt-ucsd/) | [Paper]() | [Data download for FIPT](https://mclab.ucsd.edu/FIPT_data_release/)
+### [Project Page](https://jerrypiglet.github.io/fipt-ucsd/) | [Paper]() | [~~Data download for FIPT~~](https://mclab.ucsd.edu/FIPT_data_release/) | [Backup Download: Synthetic](https://drive.google.com/file/d/1Bd-NH5wOba5m-ajyUUtqyYYgYounAysM/view?usp=drive_link) | [Backup Download: Real](https://drive.google.com/file/d/1qeq3Ta1fEnQzasuNK5mZj0ynyBek4mOA/view?usp=drive_link)
 
 ## Overview
 This repo (branch: `fipt`) contains the code for generating customized data for [FIPT](), from scratch. 
