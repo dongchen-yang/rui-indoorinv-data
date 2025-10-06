@@ -116,7 +116,7 @@ class mitsubaBase(scene2DBase):
     def to_d(self, x: np.ndarray):
         if 'mps' in self.device: # Mitsuba RuntimeError: Cannot pack tensors on mps:0
             return x
-        return torch.from_numpy(x).to(self.device)
+        return torch.from_numpy(x.copy()).to(self.device)
     
     @property
     def _T(self):

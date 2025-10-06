@@ -36,7 +36,7 @@ class renderer_mi_mitsubaScene_3D(rendererBase):
         return [
             'im', 
             # 'seg', 
-            # 'albedo', 'roughness', 
+            'albedo', 'roughness', 
             'depth', 'normal', 
             # 'lighting_envmap', 
         ]
@@ -44,7 +44,12 @@ class renderer_mi_mitsubaScene_3D(rendererBase):
     def render(self, if_force: bool=False):
         for _ in self.modality_list:
             if _ == 'im': self.render_im(if_force=if_force)
-        
+
+            if _ == 'albedo': self.render_albedo(if_force=if_force)
+    def render_albedo(self, if_force: bool=False):
+        for _ in self.modality_list:
+            if _ == 'albedo': self.render_albedo(if_force=if_force)
+
     def render_im(self, if_force: bool=False):
         self.spp = self.im_params_dict.get('spp', 1024)
         folder_name, render_folder_path = self.render_modality_check('im', if_force=if_force)
@@ -53,6 +58,33 @@ class renderer_mi_mitsubaScene_3D(rendererBase):
         for i, (origin, lookatvector, up) in tqdm(enumerate(self.os.origin_lookatvector_up_list)):
             sensor = self.get_sensor(origin, origin+lookatvector, up)
             image = mi.render(self.os.mi_scene, spp=self.spp, sensor=sensor)
+            im_rendering_path = str(render_folder_path / ('%03d_0001.exr'%i))
+            # im_rendering_path = str(render_folder_path / ('im_%d.rgbe'%i))
+            mi.util.write_bitmap(str(im_rendering_path), image)
+            '''
+            load exr: https://mitsuba.readthedocs.io/en/stable/src/how_to_guides/image_io_and_manipulation.html?highlight=load%20openexr#Reading-an-image-from-disk
+            '''
+
+            # im_rgbe = cv2.imread(str(im_rendering_path), -1)
+            # dest_path = str(im_rendering_path).replace('.rgbe', '.hdr')
+            # cv2.imwrite(dest_path, im_rgbe)
+            
+            convert_write_png(hdr_image_path='', png_image_path=str(im_rendering_path).replace('.exr', '.png'), if_mask=False, im_hdr=np.array(image))
+
+        print(blue_text('DONE.'))
+
+    def render_albedo(self, if_force: bool=False):
+        self.spp = self.im_params_dict.get('spp', 1024)
+        folder_name, render_folder_path = self.render_modality_check('albedo', if_force=if_force)
+
+        print(white_blue('[%s] Rendering RGB to... by [Mitsuba] (spp %d)): %s')%(self.__class__.__name__, self.spp, str(render_folder_path)))
+        for i, (origin, lookatvector, up) in tqdm(enumerate(self.os.origin_lookatvector_up_list)):
+            sensor = self.get_sensor(origin, origin+lookatvector, up)
+            integrator = mi.load_dict({
+                "type": "aov",
+                "aovs": 'albedo:albedo'
+            })
+            image = mi.render(self.os.mi_scene, spp=self.spp, sensor=sensor, integrator=integrator)
             im_rendering_path = str(render_folder_path / ('%03d_0001.exr'%i))
             # im_rendering_path = str(render_folder_path / ('im_%d.rgbe'%i))
             mi.util.write_bitmap(str(im_rendering_path), image)
@@ -93,4 +125,4 @@ class renderer_mi_mitsubaScene_3D(rendererBase):
                 'pixel_format': 'rgb',
             },
         })
-
+    

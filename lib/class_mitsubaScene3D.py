@@ -329,11 +329,11 @@ class mitsubaScene3D(mitsubaBase):
                     else:
                         # [TODO] @Liwen always write camera_angle_x and camera_angle_y in json
                         f_y = f_x
+
                     if not min(abs(self.K[0][0]-f_x), abs(self.K[1][1]-f_y)) < 1e-3:
                         print(self.K, f_x, f_y)
                         import ipdb; ipdb.set_trace()
                         assert False, red('computed f_xy is different than read from intrinsics! double check your loaded intrinsics!')
-
                     for R_c2w_b, t_c2w_b in zip(R_c2w_b_list, t_c2w_b_list):
                         R = R_c2w_b @ T_opengl_opencv # right mul: column-wise nagated
                         t = t_c2w_b

@@ -1,6 +1,6 @@
 PATH_HOME_dict = {
-    'apple': '/Users/jerrypiglet/Documents/Projects/rui-indoorinv-data', 
-    'mm1': '/home/ruizhu/Documents/Projects/rui-indoorinv-data', 
+    'apple': '/Users/dongchen/Desktop/rui-indoorinv-data', 
+    'mm1': '/localhome/dya78/code/rui-indoorinv-data', 
 }
 OR_RAW_ROOT_dict = {
     'apple': '/Users/jerrypiglet/Documents/Projects/data/Openrooms_RAW', 

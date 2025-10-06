@@ -9,8 +9,8 @@ Export train and val to MonoSDF format:
 import sys
 from pathlib import Path
 
-# host = 'mm1'
-host = 'apple'
+host = 'mm1'
+# host = 'apple'
 
 from lib.global_vars import PATH_HOME_dict# , INV_NERF_ROOT_dict, MONOSDF_ROOT_dict, OR_RAW_ROOT_dict
 PATH_HOME = Path(PATH_HOME_dict[host])
@@ -142,16 +142,16 @@ scene_obj = mitsubaScene3D(
     host = host, 
     root_path_dict = {'PATH_HOME': Path(PATH_HOME), 'dataset_root': dataset_root, 'xml_root': xml_root}, 
     modality_list = [
-        'im_hdr', 
-        'im_sdr', 
+        # 'im_hdr', 
+        # 'im_sdr', 
         'poses', 
         # 'lighting_envmap', 
         # 'albedo', 'roughness', 
         # 'emission', 
         # 'depth', 'normal', 
-        'shapes', # objs + emitters, geometry shapes + emitter properties``
-        'layout', 
-        'tsdf', 
+        # 'shapes', # objs + emitters, geometry shapes + emitter properties``
+        # 'layout', 
+        # 'tsdf', 
         ], 
 )
 
@@ -164,9 +164,10 @@ if opt.render_2d:
         renderer = renderer_mi_mitsubaScene_3D(
             scene_obj, 
             modality_list=[
-                'im', # both hdr and sdr
+                'im',
+                #  'albedo' # both hdr and sdr
             ], 
-            im_params_dict={}, 
+            im_params_dict={'spp': 4096}, 
             cam_params_dict={}, 
             mi_params_dict={},
         )
@@ -179,7 +180,9 @@ if opt.render_2d:
                 'depth', 
                 'normal', 
                 'index', 
-                'emission', 
+                'emission',
+                'metallic'
+
                 # 'lighting_envmap', 
                 ], 
             host=host, 
@@ -394,48 +397,48 @@ if opt.vis_3d_o3d:
             assert opt.eval_rad or opt.eval_inv or opt.eval_scene or opt.eval_monosdf
             visualizer_3D_o3d.extra_input_dict['samples_v_dict'] = eval_return_dict['samples_v_dict']
         
-    visualizer_3D_o3d.run_o3d(
-        if_shader=opt.if_shader, # set to False to disable faycny shaders 
-        cam_params={
-            'if_cam_axis_only': False, 
-            }, 
-        lighting_params=lighting_params_vis, 
-        shapes_params={
-            # 'simply_mesh_ratio_vis': 1., # simply num of triangles to #triangles * simply_mesh_ratio_vis
-            'if_meshes': True, # [OPTIONAL] if show meshes for objs + emitters (False: only show bboxes)
-            'if_labels': False, # [OPTIONAL] if show labels (False: only show bboxes)
-            'if_voxel_volume': False, # [OPTIONAL] if show unit size voxel grid from shape occupancy: images/demo_shapes_voxel_o3d.png; USEFUL WHEN NEED TO CHECK SCENE SCALE (1 voxel = 1 meter)
+    # visualizer_3D_o3d.run_o3d(
+    #     if_shader=opt.if_shader, # set to False to disable faycny shaders 
+    #     cam_params={
+    #         'if_cam_axis_only': False, 
+    #         }, 
+    #     lighting_params=lighting_params_vis, 
+    #     shapes_params={
+    #         # 'simply_mesh_ratio_vis': 1., # simply num of triangles to #triangles * simply_mesh_ratio_vis
+    #         'if_meshes': True, # [OPTIONAL] if show meshes for objs + emitters (False: only show bboxes)
+    #         'if_labels': False, # [OPTIONAL] if show labels (False: only show bboxes)
+    #         'if_voxel_volume': False, # [OPTIONAL] if show unit size voxel grid from shape occupancy: images/demo_shapes_voxel_o3d.png; USEFUL WHEN NEED TO CHECK SCENE SCALE (1 voxel = 1 meter)
 
-            'if_ceiling': True if opt.eval_scene else False, # [OPTIONAL] remove ceiling meshes to better see the furniture 
-            'if_walls': True if opt.eval_scene else False, # [OPTIONAL] remove wall meshes to better see the furniture 
-            # 'if_ceiling': False, 
-            # 'if_walls': False, 
+    #         'if_ceiling': True if opt.eval_scene else False, # [OPTIONAL] remove ceiling meshes to better see the furniture 
+    #         'if_walls': True if opt.eval_scene else False, # [OPTIONAL] remove wall meshes to better see the furniture 
+    #         # 'if_ceiling': False, 
+    #         # 'if_walls': False, 
 
-            'if_sampled_pts': False, # [OPTIONAL] is show samples pts from scene_obj.sample_pts_list if available
-            'mesh_color_type': 'eval-', # ['obj_color', 'face_normal', 'eval-' ('rad', 'emission_mask', 'vis_count', 't')]
-        },
-        emitter_params={
-            # 'if_half_envmap': False, # [OPTIONAL] if show half envmap as a hemisphere for window emitters (False: only show bboxes)
-            # 'scale_SG_length': 2., 
-            'if_sampling_emitter': True, 
-            'scene_radiance_scale': CONF.scene_params_dict.scene_radiance_scale, 
-            'max_plate': 32, 
-        },
-        mi_params={
-            'if_pts': False, # if show pts sampled by mi; should close to backprojected pts from OptixRenderer depth maps
-            'if_pts_colorize_rgb': True, 
-            'pts_subsample': 10,
-            # 'if_ceiling': True, # [OPTIONAL] remove ceiling points to better see the furniture 
-            # 'if_walls': True, # [OPTIONAL] remove wall points to better see the furniture 
+    #         'if_sampled_pts': False, # [OPTIONAL] is show samples pts from scene_obj.sample_pts_list if available
+    #         'mesh_color_type': 'eval-', # ['obj_color', 'face_normal', 'eval-' ('rad', 'emission_mask', 'vis_count', 't')]
+    #     },
+    #     emitter_params={
+    #         # 'if_half_envmap': False, # [OPTIONAL] if show half envmap as a hemisphere for window emitters (False: only show bboxes)
+    #         # 'scale_SG_length': 2., 
+    #         'if_sampling_emitter': True, 
+    #         'scene_radiance_scale': CONF.scene_params_dict.scene_radiance_scale, 
+    #         'max_plate': 32, 
+    #     },
+    #     mi_params={
+    #         'if_pts': False, # if show pts sampled by mi; should close to backprojected pts from OptixRenderer depth maps
+    #         'if_pts_colorize_rgb': True, 
+    #         'pts_subsample': 10,
+    #         # 'if_ceiling': True, # [OPTIONAL] remove ceiling points to better see the furniture 
+    #         # 'if_walls': True, # [OPTIONAL] remove wall points to better see the furniture 
 
-            'if_cam_rays': False, 
-            'cam_rays_if_pts': True, # if cam rays end in surface intersections; set to False to visualize rays of unit length
-            'cam_rays_subsample': 10, 
+    #         'if_cam_rays': False, 
+    #         'cam_rays_if_pts': True, # if cam rays end in surface intersections; set to False to visualize rays of unit length
+    #         'cam_rays_subsample': 10, 
             
-            'if_normal': False, 
-            'normal_subsample': 50, 
-            'normal_scale': 0.2, 
+    #         'if_normal': False, 
+    #         'normal_subsample': 50, 
+    #         'normal_scale': 0.2, 
 
-        }, 
-    )
+    #     }, 
+    # )
 

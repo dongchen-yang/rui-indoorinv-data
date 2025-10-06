@@ -101,6 +101,8 @@ class renderer_blender_mitsubaScene_3D(rendererBase):
         AOV_MODALS = []
         if 'roughness' in self.modality_list:
             AOV_MODALS.append('Roughness') #,'Metallic'
+        if 'metallic' in self.modality_list:
+            AOV_MODALS.append('Metallic')
         # assigne material id
         for i, mat in enumerate(bpy.data.materials):
             mat.pass_index=(i+1)
@@ -113,7 +115,7 @@ class renderer_blender_mitsubaScene_3D(rendererBase):
                 for node in tree.nodes:
                     if 'Bsdf' not in node.bl_idname:
                         continue
-                    if (node.bl_idname =='ShaderNodeBsdfGlossy' or node.bl_idname =='ShaderNodeBsdfGlass') and node.distribution == 'SHARP' and aov_modal=='Roughness':
+                    if (node.bl_idname =='ShaderNodeBsdfGlossy' or node.bl_idname =='ShaderNodeBsdfGlass') and node.distribution == 'SHARP':
                         modal_value = 0.0
                         buffer_node = tree.nodes.new('ShaderNodeValue')
                         from_socket = buffer_node.outputs['Value']
@@ -155,6 +157,13 @@ class renderer_blender_mitsubaScene_3D(rendererBase):
         # self.cam = scene.objects['Camera'] # the sensor in XML has to has 'id="Camera"'
         self.cam = bpy.context.scene.camera#scene.objects['Camera']
 
+        ## print camera intrinsics
+        # print(self.cam.data.lens)
+        # print(self.cam.data.sensor_width)
+        # print(self.cam.data.sensor_height)
+        # print(self.cam.data.angle_x)
+        # print(self.cam.data.angle_y)
+        # raise Exception
         obj_idx = 1
         for obj in bpy.context.scene.objects:
             if obj.type in ('MESH'):
@@ -193,11 +202,80 @@ class renderer_blender_mitsubaScene_3D(rendererBase):
         return [
             # 'im', 
             'albedo', 'roughness', 
+            'metallic',
             'depth', 'normal', 
             'index', 
             'emission', 
             'lighting_envmap', 
         ]
+    
+    def debug_texture_loading(self):
+        """
+        Debug texture loading issues in the loaded Blender scene
+        """
+        from lib.utils_misc import white_blue, blue_text, red, yellow
+        
+        print(white_blue("=== DEBUGGING TEXTURE LOADING ==="))
+        
+        # Check 1: Materials
+        print(blue_text(f"Found {len(bpy.data.materials)} materials:"))
+        for i, mat in enumerate(bpy.data.materials):
+            print(f"  {i+1}. {mat.name}")
+            
+            if not mat.use_nodes:
+                print(red(f"    ✗ Material {mat.name} not using nodes"))
+                continue
+            
+            tree = mat.node_tree
+            if not tree:
+                print(red(f"    ✗ No node tree for material {mat.name}"))
+                continue
+            
+            # Check for image texture nodes
+            img_nodes = [n for n in tree.nodes if n.type == 'TEX_IMAGE']
+            print(f"    Image texture nodes: {len(img_nodes)}")
+            
+            for img_node in img_nodes:
+                if img_node.image:
+                    img_path = Path(img_node.image.filepath) if img_node.image.filepath else None
+                    if img_path and img_path.exists():
+                        print(f"      ✓ {img_node.name} -> {img_node.image.name}")
+                    else:
+                        print(red(f"      ✗ {img_node.name} -> MISSING: {img_path}"))
+                else:
+                    print(red(f"      ✗ {img_node.name} has no image assigned"))
+        
+        # Check 2: All images in scene
+        print(blue_text(f"\nFound {len(bpy.data.images)} images:"))
+        missing_count = 0
+        for img in bpy.data.images:
+            if img.filepath:
+                img_path = Path(img.filepath)
+                if img_path.exists():
+                    print(f"  ✓ {img.name}")
+                else:
+                    print(red(f"  ✗ {img.name} -> MISSING: {img_path}"))
+                    missing_count += 1
+            else:
+                print(yellow(f"  ~ {img.name} (no filepath)"))
+        
+        if missing_count > 0:
+            print(yellow(f"\n{missing_count} textures are missing!"))
+            print("Common solutions:")
+            print("1. Check if texture files exist relative to the XML file")
+            print("2. Re-export the Mitsuba XML to Blender with correct paths")
+            print("3. Manually fix paths in Blender and re-save")
+        else:
+            print(blue_text("✓ All texture files found!"))
+        
+        # Check 3: Render settings that might affect texture display
+        print(blue_text("\nRender settings:"))
+        print(f"  Engine: {self.scene.render.engine}")
+        print(f"  Device: {self.scene.cycles.device}")
+        print(f"  Samples: {self.scene.cycles.samples}")
+        
+        print(white_blue("=== DEBUG COMPLETE ==="))
+        return missing_count == 0
 
     def render(self, if_force: bool=False):
         '''
